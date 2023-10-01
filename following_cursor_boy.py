@@ -8,10 +8,11 @@ character = load_image('animation_sheet.png')
 hand_arrow = load_image('hand_arrow.png')
 
 running = True
+click = False
 frame = 0
-x, y = TUK_WIDTH // 2, TUK_HEIGHT // 2
-hx, hy = 0, 0
-cx, cy = TUK_WIDTH // 2, TUK_HEIGHT // 2
+x, y = TUK_WIDTH // 2, TUK_HEIGHT // 2      # 마우스 움직일 때의 x, y
+hx, hy = 0, 0                               # 클릭 했을 때의 x, y
+cx, cy = TUK_WIDTH // 2, TUK_HEIGHT // 2    # 클릭 하기 전의 x, y
 hide_cursor()
 
 def handle_events():
@@ -19,6 +20,8 @@ def handle_events():
     global running
     global hx, hy
     global x, y
+    global point_list
+    global click
 
     events = get_events()
     for event in events:
@@ -32,9 +35,12 @@ def handle_events():
             running = False
         elif event.type == SDL_MOUSEBUTTONDOWN:
             hx, hy = event.x, TUK_HEIGHT - 1 - event.y
+            point_list.append((hx, hy))
+            click = True
 
 def draw_click():
     global hx, hy
+
     hand_arrow.draw(hx, hy)
 
 def draw_hand_character(px, py):
@@ -51,6 +57,7 @@ def draw_all(p1, p2):
     global hx, hy
     global cx, cy
     global x, y
+    global click
 
     x1, y1 = cx, cy
     x2, y2 = p1, p2
@@ -67,6 +74,7 @@ def draw_all(p1, p2):
         t = i / 100
         px = (1 - t) * x1 + t * x2   # 1 - t : t 의 비율로 x1, x2를 섞고 더한다
         py = (1 - t) * y1 + t * y2
+
         if x1 < x2:
             character.clip_draw(frame * 100, 100, 100, 100, px, py, 150, 150)
         elif x2 < x1:
@@ -77,8 +85,11 @@ def draw_all(p1, p2):
             break
 
         delay(0.05 * t)
+
     cx, cy = hx, hy
-    hx, hy = 0, 0
+    click = False
+
+point_list = []
 
 while running:
     clear_canvas()
@@ -90,9 +101,9 @@ while running:
 
     handle_events()
 
-    if hx and hy > 0:
+    if click:
         draw_all(hx, hy)
-
+        print(point_list)
     update_canvas()
 
     if not running:
