@@ -10,7 +10,8 @@ hand_arrow = load_image('hand_arrow.png')
 running = True
 frame = 0
 x, y = TUK_WIDTH // 2, TUK_HEIGHT // 2
-hx, hy = -1, -1
+hx, hy = 0, 0
+cx, cy = TUK_WIDTH // 2, TUK_HEIGHT // 2
 hide_cursor()
 
 def handle_events():
@@ -32,9 +33,8 @@ def handle_events():
         elif event.type == SDL_MOUSEBUTTONDOWN:
             hx, hy = event.x, TUK_HEIGHT - 1 - event.y
 
-def draw_hand():
+def draw_click():
     global hx, hy
-
     hand_arrow.draw(hx, hy)
 
 def draw_hand_character(px, py):
@@ -49,13 +49,16 @@ def draw_all(p1, p2):
 
     global frame
     global hx, hy
+    global cx, cy
 
-    x1, y1 = hx, hy
+    x1, y1 = cx, cy
     x2, y2 = p1, p2
 
     for i in range(0, 100, 4):
         clear_canvas()
         tuk_ground.draw(TUK_WIDTH // 2, TUK_HEIGHT // 2)
+        draw_click()
+
         frame = (frame + 1) % 8
 
         t = i / 100
@@ -65,28 +68,29 @@ def draw_all(p1, p2):
             character.clip_draw(frame * 100, 100, 100, 100, x, y, 150, 150)
         elif x2 < x1:
             character.clip_draw(frame * 100, 0, 100, 100, x, y, 150, 150)
-        hand_arrow.draw(x2, y2)
+        update_canvas()
 
         if not running:
             break
 
-        update_canvas()
         delay(0.05 * t)
-
-
+    cx, cy = hx, hy
+    hx, hy = 0, 0
 
 while running:
     clear_canvas()
     tuk_ground.draw(TUK_WIDTH // 2, TUK_HEIGHT // 2)
     hand_arrow.draw(x, y)
     frame = (frame + 1) % 8
-    character.clip_draw(frame * 100, 0, 100, 100, TUK_WIDTH // 2, TUK_HEIGHT // 2, 150, 150)
+
+    character.clip_draw(frame * 100, 0, 100, 100, cx, cy, 150, 150)
+
+    handle_events()
 
     if hx and hy > 0:
-        draw_hand()
+        draw_all(hx, hy)
 
     update_canvas()
-    handle_events()
 
     if not running:
         break
